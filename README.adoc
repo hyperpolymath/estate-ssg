@@ -1,1 +1,67 @@
+= estate-ssg
+:toc: auto
+:toclevels: 3
 
+**The definitive Forth static site generator.**
+
+== Overview
+
+estate-ssg is a stack-based static site generator written in Forth.
+It demonstrates that even minimal, low-level languages can be effective
+for building modern web tools.
+
+== Language Enforcement
+
+[IMPORTANT]
+====
+This SSG **MUST** be written in Forth. No exceptions.
+
+Forbidden languages for SSG logic:
+
+* Python
+* JavaScript/TypeScript
+* C (even for performance)
+* Any language other than Forth
+
+The **ONLY** non-Forth code allowed is the ReScript MCP adapter in `adapters/`.
+====
+
+== Features
+
+* Minimal dependencies - just needs Gforth
+* Stack-based operations for content transformation
+* Interactive REPL for site development
+* Direct hardware access capabilities
+* Extremely fast execution
+
+== Requirements
+
+* Gforth 0.7+
+
+== Building
+
+[source,bash]
+----
+gforth src/estate-ssg.fs -e 'build bye'
+----
+
+== Project Structure
+
+[source]
+----
+estate-ssg/
+├── src/                  # Forth source (THE SSG)
+├── adapters/             # ReScript MCP adapter only
+├── STATE.scm             # Project state
+├── ECOSYSTEM.scm         # Ecosystem position
+├── META.scm              # Architecture decisions
+└── .claude/CLAUDE.md     # AI guidelines
+----
+
+== Part of poly-ssg
+
+estate-ssg is a satellite of the https://github.com/hyperpolymath/poly-ssg-mcp[poly-ssg-mcp] hub.
+
+== License
+
+AGPL-3.0-or-later
