@@ -99,7 +99,7 @@ module Adapter = {
             }
           | None => "."
           }
-          let result = runCommand("gforth src/estate-ssg.fs -e 'build bye'", ~cwd=Some(path))
+          let result = runCommand("gforth src/forth-estate.fs -e 'build bye'", ~cwd=Some(path))
           resolve(result)
         })
       },
@@ -118,7 +118,7 @@ module Adapter = {
             }
           | None => "."
           }
-          let result = runCommand("gforth src/estate-ssg.fs -e 'clean bye'", ~cwd=Some(path))
+          let result = runCommand("gforth src/forth-estate.fs -e 'clean bye'", ~cwd=Some(path))
           resolve(result)
         })
       },
