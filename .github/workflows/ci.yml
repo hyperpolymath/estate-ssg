@@ -21,8 +21,8 @@ jobs:
 
       - name: Syntax Check
         run: |
-          if [ -f src/estate-ssg.fs ]; then
-            gforth src/estate-ssg.fs -e 'bye'
+          if [ -f src/forth-estate.fs ]; then
+            gforth src/forth-estate.fs -e 'bye'
           fi
 
   language-check:
