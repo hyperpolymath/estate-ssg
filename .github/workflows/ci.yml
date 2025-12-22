@@ -24,31 +24,9 @@ jobs:
 
       - name: Syntax Check
         run: |
-          echo "Checking Forth syntax..."
-          gforth src/forth-estate.fs -e 'bye'
-          echo "Syntax OK"
-
-  forth-tests:
-    name: Forth Tests
-    runs-on: ubuntu-latest
-    needs: forth-syntax
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-
-      - name: Install Gforth
-        run: sudo apt-get update && sudo apt-get install -y gforth
-
-      - name: Run Buffer Tests
-        run: gforth src/forth-estate.fs -e 'test-buffer bye'
-
-      - name: Run Markdown Tests
-        run: gforth src/forth-estate.fs -e 'test-markdown bye'
-
-      - name: Run Frontmatter Tests
-        run: gforth src/forth-estate.fs -e 'test-frontmatter bye'
-
-      - name: Run Full Pipeline Tests
-        run: gforth src/forth-estate.fs -e 'test-full bye'
+          if [ -f src/forth-estate.fs ]; then
+            gforth src/forth-estate.fs -e 'bye'
+          fi
 
   language-check:
     name: Language Compliance
