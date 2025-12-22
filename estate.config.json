@@ -1,0 +1,21 @@
+{
+  "$schema": "./src/manifest.json",
+  "name": "estate-ssg-example",
+  "version": "1.0.0",
+  "author": "hyperpolymath",
+  "description": "Example estate-ssg site configuration",
+  "paths": {
+    "content": "content",
+    "output": "output",
+    "templates": "templates"
+  },
+  "build": {
+    "drafts": false,
+    "minify": false
+  },
+  "site": {
+    "title": "Forth Estate",
+    "description": "A stack-based static site",
+    "baseUrl": "https://example.com"
+  }
+}

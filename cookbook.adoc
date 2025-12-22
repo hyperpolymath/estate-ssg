@@ -1,0 +1,634 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= estate-ssg Cookbook
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: rouge
+
+The comprehensive guide to building, testing, and deploying with estate-ssg.
+
+== Quick Reference
+
+[cols="1,2,2"]
+|===
+|Task |Just |Mustfile
+
+|Build site
+|`just build`
+|—
+
+|Run tests
+|`just test`
+|`make must-tests`
+
+|Check syntax
+|`just check`
+|`make must-syntax`
+
+|Full CI
+|`just ci-local`
+|`make must-ci`
+|===
+
+[[cli]]
+== CLI Commands
+
+=== Gforth Commands
+
+Direct Forth invocation patterns:
+
+[source,bash]
+----
+# Load and exit (syntax check)
+gforth src/forth-estate.fs -e 'bye'
+
+# Run specific test
+gforth src/forth-estate.fs -e 'test-markdown bye'
+
+# Interactive REPL
+gforth src/forth-estate.fs
+
+# Build site (when paths on stack)
+gforth src/forth-estate.fs -e 's" content" s" output" build-site bye'
+
+# Process single file
+gforth src/forth-estate.fs -e 's" post.md" s" post.html" process-file bye'
+----
+
+=== Command Combinations
+
+Common command sequences:
+
+[source,bash]
+----
+# Full development cycle
+just check && just test && just build
+
+# Pre-commit validation
+just pre-commit
+
+# CI simulation
+just ci-local
+
+# Clean rebuild
+just clean && just build
+
+# Test then REPL
+just test && just repl
+----
+
+=== Adapter Commands
+
+ReScript MCP adapter management:
+
+[source,bash]
+----
+# Build adapter
+cd adapters && npm install && npm run build
+
+# Or via just
+just adapter-build
+
+# Clean adapter
+just adapter-clean
+
+# Watch mode
+just adapter-watch
+----
+
+[[just]]
+== Just Recipes
+
+=== Core Recipes
+
+[source,justfile]
+----
+# Build the site
+just build
+
+# Clean output
+just clean
+
+# Check Forth syntax
+just check
+
+# Start REPL
+just repl
+----
+
+=== Testing Recipes
+
+[source,justfile]
+----
+# Unit tests
+just test
+
+# End-to-end tests
+just test-e2e
+
+# All tests
+just test-all
+----
+
+=== Development Recipes
+
+[source,justfile]
+----
+# Initial setup
+just setup
+
+# Pre-commit checks
+just pre-commit
+
+# Lint code
+just lint
+
+# Language compliance check
+just language-check
+----
+
+=== Container Recipes
+
+[source,justfile]
+----
+# Build container
+just container-build
+
+# Run in container
+just container-run
+----
+
+=== Release Recipes
+
+[source,justfile]
+----
+# Create release tag
+just release 1.0.0
+
+# Show version
+just version
+----
+
+[[nickel]]
+== Nickel Configuration
+
+=== Site Manifest Schema
+
+The `src/manifest.ncl` defines the site configuration schema:
+
+[source,nickel]
+----
+# Site configuration schema
+{
+  name | String,
+  version | String | default = "1.0.0",
+  author | String | optional,
+
+  paths | {
+    content | String | default = "content",
+    output | String | default = "output",
+    templates | String | default = "templates",
+  },
+
+  build | {
+    drafts | Bool | default = false,
+    minify | Bool | default = false,
+  },
+}
+----
+
+=== Configuration Example
+
+Create `estate.config.json`:
+
+[source,json]
+----
+{
+  "name": "my-site",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "paths": {
+    "content": "content",
+    "output": "dist",
+    "templates": "templates"
+  },
+  "build": {
+    "drafts": false,
+    "minify": true
+  }
+}
+----
+
+=== Nickel Validation
+
+[source,bash]
+----
+# Validate config against schema
+nickel export --format json estate.config.ncl
+
+# Check schema
+nickel typecheck src/manifest.ncl
+----
+
+[[combinatorics]]
+== CLI Combinatorics
+
+=== Command Permutations
+
+All valid command combinations:
+
+==== Build Variations
+
+[source,bash]
+----
+# Standard build
+just build
+
+# Clean then build
+just clean && just build
+
+# Check, test, build
+just check && just test && just build
+
+# Full pipeline
+just ci-local && just build
+----
+
+==== Test Variations
+
+[source,bash]
+----
+# Quick test
+just test
+
+# Comprehensive test
+just test-all
+
+# Test specific word
+gforth src/forth-estate.fs -e 'test-buffer bye'
+gforth src/forth-estate.fs -e 'test-markdown bye'
+gforth src/forth-estate.fs -e 'test-frontmatter bye'
+gforth src/forth-estate.fs -e 'test-full bye'
+----
+
+==== CI Variations
+
+[source,bash]
+----
+# Minimal CI
+just check && just test
+
+# Standard CI
+just ci-local
+
+# Full mandatory checks
+make -f Mustfile must-ci
+----
+
+=== Pipeline Concatenations
+
+Complex pipeline compositions:
+
+[source,bash]
+----
+# Development flow
+just setup && just check && just test && just build
+
+# Release flow
+just ci-local && just release 1.0.0 && git push origin v1.0.0
+
+# Containerized flow
+just container-build && just container-run
+
+# Adapter development
+just adapter-build && just test && just adapter-watch
+----
+
+[[mustfile]]
+== Mustfile Checks
+
+=== Mandatory Checks
+
+[source,makefile]
+----
+# All mandatory checks
+make -f Mustfile must-all
+
+# Individual checks
+make -f Mustfile must-syntax      # Forth syntax
+make -f Mustfile must-language    # No forbidden languages
+make -f Mustfile must-tests       # Tests pass
+make -f Mustfile must-license     # SPDX headers
+----
+
+=== Security Checks
+
+[source,makefile]
+----
+# No secrets
+make -f Mustfile must-no-secrets
+
+# No .env files
+make -f Mustfile must-no-env
+
+# Pre-merge validation
+make -f Mustfile must-pre-merge
+----
+
+=== Component Verification
+
+[source,makefile]
+----
+# Core engine
+make -f Mustfile must-core-engine
+
+# SCM files
+make -f Mustfile must-scm-files
+
+# Documentation
+make -f Mustfile must-docs
+----
+
+[[forth]]
+== Forth Reference
+
+=== Stack Effect Notation
+
+[source,forth]
+----
+\ ( inputs -- outputs )
+\ Common types:
+\   addr u   - address and length (string)
+\   flag     - boolean
+\   n        - signed number
+\   c        - character
+----
+
+=== Core Words
+
+==== String Utilities
+
+[source,forth]
+----
+trim-left   ( addr u -- addr' u' )  \ Remove leading whitespace
+trim-right  ( addr u -- addr u' )   \ Remove trailing whitespace
+trim        ( addr u -- addr' u' )  \ Remove both
+string=     ( addr1 u1 addr2 u2 -- flag )  \ Compare strings
+starts-with? ( addr1 u1 c-addr u -- flag ) \ Check prefix
+----
+
+==== Buffer Operations
+
+[source,forth]
+----
+init-output    ( -- )           \ Initialize output buffer
+free-output    ( -- )           \ Free buffer memory
+append-output  ( addr u -- )    \ Append string
+append-char    ( c -- )         \ Append character
+get-output     ( -- addr u )    \ Get buffer contents
+reset-output   ( -- )           \ Clear buffer
+----
+
+==== Parsing
+
+[source,forth]
+----
+parse-frontmatter  ( addr u -- addr' u' )  \ Parse YAML frontmatter
+parse-markdown     ( addr u -- )           \ Parse markdown to HTML
+process-line       ( addr u -- )           \ Process single line
+----
+
+==== File I/O
+
+[source,forth]
+----
+read-file-contents   ( addr u -- addr' u' flag )  \ Read file
+write-file-contents  ( addr u filename-a filename-u -- flag )  \ Write file
+----
+
+==== Testing
+
+[source,forth]
+----
+test-buffer      ( -- )  \ Test buffer operations
+test-markdown    ( -- )  \ Test markdown parsing
+test-frontmatter ( -- )  \ Test frontmatter parsing
+test-full        ( -- )  \ Full pipeline test
+----
+
+[[hooks]]
+== Hooks Configuration
+
+=== Pre-commit Hooks
+
+Create `.git/hooks/pre-commit`:
+
+[source,bash]
+----
+#!/bin/bash
+# Pre-commit hook for estate-ssg
+
+echo "Running pre-commit checks..."
+
+# Syntax check
+gforth src/forth-estate.fs -e 'bye' || exit 1
+
+# Language check
+forbidden=$(find src/ -type f \( -name "*.py" -o -name "*.js" -o -name "*.ts" \) 2>/dev/null)
+if [ -n "$forbidden" ]; then
+    echo "ERROR: Forbidden language files found"
+    exit 1
+fi
+
+# Run tests
+gforth src/forth-estate.fs -e 'test-buffer bye' || exit 1
+
+echo "Pre-commit checks passed!"
+----
+
+=== Claude Code Hooks
+
+Configure in `.claude/hooks.json`:
+
+[source,json]
+----
+{
+  "pre-edit": {
+    "command": "just check",
+    "on_failure": "warn"
+  },
+  "post-edit": {
+    "command": "just test",
+    "on_failure": "block"
+  },
+  "pre-commit": {
+    "command": "make -f Mustfile must-pre-merge",
+    "on_failure": "block"
+  }
+}
+----
+
+=== MCP Hooks
+
+Adapter hooks for poly-ssg-mcp:
+
+[source,json]
+----
+{
+  "tools": {
+    "estate_build": {
+      "pre_hook": "just check",
+      "post_hook": "just test"
+    },
+    "estate_clean": {
+      "confirm": true
+    }
+  }
+}
+----
+
+[[cicd]]
+== CI/CD Configuration
+
+=== GitHub Actions Workflow
+
+[source,yaml]
+----
+name: Forth CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Gforth
+        run: sudo apt-get update && sudo apt-get install -y gforth
+
+      - name: Syntax Check
+        run: gforth src/forth-estate.fs -e 'bye'
+
+      - name: Run Tests
+        run: |
+          gforth src/forth-estate.fs -e 'test-buffer bye'
+          gforth src/forth-estate.fs -e 'test-markdown bye'
+          gforth src/forth-estate.fs -e 'test-frontmatter bye'
+
+  language-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify Forth-only
+        run: |
+          forbidden=$(find src/ -type f \( -name "*.py" -o -name "*.js" -o -name "*.ts" \))
+          if [ -n "$forbidden" ]; then
+            echo "Forbidden files: $forbidden"
+            exit 1
+          fi
+----
+
+[[troubleshooting]]
+== Troubleshooting
+
+=== Common Issues
+
+==== Gforth Not Found
+
+[source,bash]
+----
+# Install on Ubuntu/Debian
+sudo apt-get update && sudo apt-get install -y gforth
+
+# Install on macOS
+brew install gforth
+
+# Verify installation
+gforth --version
+----
+
+==== Stack Underflow
+
+Check stack effects match:
+
+[source,forth]
+----
+\ If word expects ( addr u -- ) ensure both are on stack
+s" test string" some-word  \ Correct: pushes addr and u
+----
+
+==== Memory Errors
+
+Always pair allocate/free:
+
+[source,forth]
+----
+init-output    \ Allocate
+\ ... use buffer ...
+free-output    \ Free
+----
+
+[[appendix]]
+== Appendix
+
+=== File Map
+
+[cols="2,3"]
+|===
+|File |Purpose
+
+|`src/forth-estate.fs`
+|Main Forth engine
+
+|`adapters/src/EstateAdapter.res`
+|MCP adapter
+
+|`Justfile`
+|Build automation
+
+|`Mustfile`
+|Mandatory checks
+
+|`META.scm`
+|Architecture decisions
+
+|`STATE.scm`
+|Project status
+
+|`ECOSYSTEM.scm`
+|Ecosystem position
+
+|`PLAYBOOK.scm`
+|Development workflow
+
+|`AGENTIC.scm`
+|AI agent guidelines
+
+|`NEUROSYM.scm`
+|Neurosymbolic integration
+
+|`ROADMAP.scm`
+|Development roadmap
+|===
+
+=== Version History
+
+[cols="1,2,3"]
+|===
+|Version |Date |Changes
+
+|1.0.0
+|2025-12-16
+|Initial Forth implementation
+
+|1.1.0
+|2025-12-22
+|Full 44-component structure
+|===

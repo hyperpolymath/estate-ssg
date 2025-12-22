@@ -1,0 +1,118 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Mustfile — estate-ssg mandatory checks
+# These commands MUST pass before merge
+
+# ============================================================================
+# Mandatory Checks (MUST pass)
+# ============================================================================
+
+# All mandatory checks
+must-all: must-syntax must-language must-tests must-license
+	@echo "All mandatory checks passed."
+
+# Forth syntax must be valid
+must-syntax:
+	@echo "[MUST] Checking Forth syntax..."
+	@gforth src/forth-estate.fs -e 'bye' || { echo "FAILED: Forth syntax error"; exit 1; }
+	@echo "[PASS] Forth syntax valid"
+
+# No forbidden languages in src/
+must-language:
+	@echo "[MUST] Checking language compliance..."
+	@forbidden=$$(find src/ -type f \( -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.rb" -o -name "*.go" -o -name "*.java" -o -name "*.c" -o -name "*.cpp" \) 2>/dev/null); \
+	if [ -n "$$forbidden" ]; then \
+		echo "FAILED: Forbidden language files found:"; \
+		echo "$$forbidden"; \
+		exit 1; \
+	fi
+	@echo "[PASS] Only Forth in src/"
+
+# Tests must pass
+must-tests:
+	@echo "[MUST] Running tests..."
+	@gforth src/forth-estate.fs -e 'test-buffer bye' || { echo "FAILED: test-buffer"; exit 1; }
+	@gforth src/forth-estate.fs -e 'test-markdown bye' || { echo "FAILED: test-markdown"; exit 1; }
+	@gforth src/forth-estate.fs -e 'test-frontmatter bye' || { echo "FAILED: test-frontmatter"; exit 1; }
+	@echo "[PASS] All tests passed"
+
+# License headers must be present
+must-license:
+	@echo "[MUST] Checking SPDX headers..."
+	@grep -q "SPDX-License-Identifier" src/forth-estate.fs || { echo "FAILED: Missing SPDX in forth-estate.fs"; exit 1; }
+	@grep -q "SPDX-License-Identifier" META.scm || { echo "FAILED: Missing SPDX in META.scm"; exit 1; }
+	@echo "[PASS] SPDX headers present"
+
+# ============================================================================
+# Security Checks (MUST pass for release)
+# ============================================================================
+
+# No secrets in codebase
+must-no-secrets:
+	@echo "[MUST] Checking for secrets..."
+	@if grep -rE "(password|secret|api_key|token)\s*=" --include="*.fs" --include="*.res" . 2>/dev/null | grep -v "example" | grep -v "#"; then \
+		echo "FAILED: Potential secrets found"; \
+		exit 1; \
+	fi
+	@echo "[PASS] No obvious secrets"
+
+# No .env files committed
+must-no-env:
+	@echo "[MUST] Checking for .env files..."
+	@if git ls-files | grep -E "^\.env$$|^\.env\." | grep -v ".example"; then \
+		echo "FAILED: .env file committed"; \
+		exit 1; \
+	fi
+	@echo "[PASS] No .env files committed"
+
+# ============================================================================
+# Pre-merge Checks
+# ============================================================================
+
+# Full pre-merge validation
+must-pre-merge: must-all must-no-secrets must-no-env
+	@echo ""
+	@echo "==================================="
+	@echo "  ALL MANDATORY CHECKS PASSED"
+	@echo "  Safe to merge"
+	@echo "==================================="
+
+# ============================================================================
+# Component Verification
+# ============================================================================
+
+# Verify core engine components
+must-core-engine:
+	@echo "[MUST] Verifying core engine..."
+	@grep -q ": parse-markdown" src/forth-estate.fs || { echo "FAILED: parse-markdown missing"; exit 1; }
+	@grep -q ": parse-frontmatter" src/forth-estate.fs || { echo "FAILED: parse-frontmatter missing"; exit 1; }
+	@grep -q ": apply-template" src/forth-estate.fs || { echo "FAILED: apply-template missing"; exit 1; }
+	@echo "[PASS] Core engine components present"
+
+# Verify SCM files
+must-scm-files:
+	@echo "[MUST] Verifying SCM files..."
+	@test -f META.scm || { echo "FAILED: META.scm missing"; exit 1; }
+	@test -f STATE.scm || { echo "FAILED: STATE.scm missing"; exit 1; }
+	@test -f ECOSYSTEM.scm || { echo "FAILED: ECOSYSTEM.scm missing"; exit 1; }
+	@test -f ROADMAP.scm || { echo "FAILED: ROADMAP.scm missing"; exit 1; }
+	@echo "[PASS] All SCM files present"
+
+# Verify documentation
+must-docs:
+	@echo "[MUST] Verifying documentation..."
+	@test -f README.adoc || { echo "FAILED: README.adoc missing"; exit 1; }
+	@test -f SECURITY.md || { echo "FAILED: SECURITY.md missing"; exit 1; }
+	@test -f cookbook.adoc || { echo "FAILED: cookbook.adoc missing"; exit 1; }
+	@echo "[PASS] Documentation present"
+
+# ============================================================================
+# CI Simulation
+# ============================================================================
+
+# Simulate full CI run
+must-ci: must-pre-merge must-core-engine must-scm-files must-docs
+	@echo ""
+	@echo "==================================="
+	@echo "  CI SIMULATION COMPLETE"
+	@echo "  All checks passed"
+	@echo "==================================="

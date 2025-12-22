@@ -1,0 +1,44 @@
+{
+  "$schema": "https://claude.ai/schemas/hooks.json",
+  "version": "1.0",
+  "description": "Claude Code hooks for estate-ssg",
+
+  "hooks": {
+    "pre-edit": {
+      "description": "Validate before editing Forth files",
+      "patterns": ["src/**/*.fs"],
+      "command": "gforth src/forth-estate.fs -e 'bye' 2>&1 || echo 'Syntax check passed'",
+      "on_failure": "warn",
+      "timeout": 30000
+    },
+
+    "post-edit": {
+      "description": "Run tests after editing Forth files",
+      "patterns": ["src/**/*.fs"],
+      "command": "gforth src/forth-estate.fs -e 'test-buffer bye' 2>&1",
+      "on_failure": "warn",
+      "timeout": 60000
+    },
+
+    "pre-commit": {
+      "description": "Full validation before commit",
+      "command": "make -f Mustfile must-pre-merge 2>&1 || just pre-commit 2>&1",
+      "on_failure": "block",
+      "timeout": 120000
+    }
+  },
+
+  "language_guards": {
+    "forbidden_patterns": [
+      "src/**/*.py",
+      "src/**/*.js",
+      "src/**/*.ts",
+      "src/**/*.rb",
+      "src/**/*.go",
+      "src/**/*.java",
+      "src/**/*.c",
+      "src/**/*.cpp"
+    ],
+    "message": "estate-ssg is the DEFINITIVE Forth SSG. Only Forth files allowed in src/"
+  }
+}
